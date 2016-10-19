@@ -51,10 +51,46 @@ ENGLISH_LETTER_FREQUENCY = {
 
 ENGLISH_LETTERS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q" "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 
+# Solve challenge 1
 def hex_to_base_64(hex_string)
   raw_to_base_64(hex_to_raw(hex_string))
 end
 
+# Solve challenge 2
+def fixed_xor(hex_string1, hex_string2)
+  xor_raw = hex_to_raw(hex_string1).zip(hex_to_raw(hex_string2)).map do |arr|
+    arr[0] ^ arr[1]
+  end
+  raw_to_hex(xor_raw)
+end
+
+# Solve challenge 3
+def decode_single_xor(hex_string)
+  byte_scores = {}
+  (0..255).each do |byte|
+    xor_byte_array = xor_single_char(hex_string, byte.chr)
+    byte_scores[byte] = score_byte_array(xor_byte_array)
+  end
+  score_byte_hash = invert_hash(byte_scores)
+  max_bytes_array = score_byte_hash[score_byte_hash.keys.min]
+  
+  # If there are multiple, choose the one with fewer lower case letters
+  answer_byte = if max_bytes_array.length > 1
+    max_bytes_array.max_by do |byte|
+      chr_arr = byte_array_to_char_array(xor_single_char(hex_string, byte.chr))
+      chr_arr.count { |c| c.downcase == c }
+    end
+  else
+    max_bytes_array[0]
+  end
+
+  puts answer_byte
+  puts xor_single_char(hex_string, answer_byte).map {|byte| byte.chr}.join('')
+end
+
+##### Helper methods #####
+
+## For P1
 def raw_to_base_64(byte_array)
   return "" if byte_array == []
   ((3 - (byte_array.length % 3)) % 3).times { byte_array << 0 }
@@ -70,19 +106,14 @@ def hex_to_raw(hex_string)
   byte_array = nibble_array.each_slice(2).map { |b| b[1] | b[0] << 4 }
 end
 
-def fixed_xor(hex_string1, hex_string2)
-  xor_raw = hex_to_raw(hex_string1).zip(hex_to_raw(hex_string2)).map do |arr|
-    arr[0] ^ arr[1]
-  end
-  raw_to_hex(xor_raw)
-end
-
+## For P2
 def raw_to_hex(byte_array)
   byte_array.inject("") do |memo, byte|
     memo + HEX_CHARS[byte >> 4] + HEX_CHARS[byte % 16]
   end
 end
 
+## For P3
 def xor_single_char(hex_string, char)
   byte_array = hex_to_raw(hex_string)
   raw_char = char.ord
@@ -102,30 +133,14 @@ def byte_array_to_freq_hash(byte_array)
   end
   make_frequency_hash(letter_array)
 end
-
-def decode_single_xor(hex_string)
-  byte_scores = {}
-  (0..255).each do |byte|
-    xor_byte_array = xor_single_char(hex_string, byte.chr)
-    byte_scores[byte] = score_byte_array(xor_byte_array)
+def invert_hash(hash)
+  inverted = {}
+  hash.each do |key, value|
+    prev = inverted[value]
+    inverted[value] = prev != nil ? prev << key : [key]
   end
-  p byte_scores
-  p sorted_scores = sort_freq_hash(byte_scores)
-  puts sorted_scores[0]
-  puts xor_single_char(hex_string, sorted_scores[0]).map {|byte| byte.chr}.join('')
+  inverted
 end
-
-# def byte_array_likely_decodes(byte_array)
-#   all_are_chars_or_spaces = byte_array.all? do |dec_byte|
-#     dec_byte >= 65 && dec_byte >= 122 || dec_byte == 32
-#   end
-
-#   freq_hash = make_frequency_hash(byte_array)
-#   sorted_bytes = freq_hash.to_a.sort_by { |a1, a2| a1[1] <=> a2[1] }
-#   space_is_most_common = freq_hash.max_by {|k,v| v }[0] == 32
-#   e_is_most_common = freq_hash.max_by {|k,v| v}[0] == 101
-#   (space_is_most_common || e_is_most_common) && all_are_chars_or_spaces
-# end
 
 def score_byte_array(byte_array)
   score_sorted_array(sort_freq_hash(byte_array_to_freq_hash(byte_array)))
