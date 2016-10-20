@@ -88,6 +88,18 @@ def decode_single_xor(hex_string)
   puts xor_single_char(hex_string, answer_byte).map {|byte| byte.chr}.join('')
 end
 
+# Solve challenge 4
+def find_the_single_xor(filename)
+  lines = File.open(filename, 'rb').readlines
+  best_score = 26*26
+  best_line = 0
+  best_byte = 0
+
+  lines.each_with_index do |line|
+    
+  end
+end
+
 ##### Helper methods #####
 
 ## For P1
