@@ -73,31 +73,48 @@ def decode_single_xor(hex_string)
   end
   score_byte_hash = invert_hash(byte_scores)
   max_bytes_array = score_byte_hash[score_byte_hash.keys.min]
-  
+
   # If there are multiple, choose the one with fewer lower case letters
-  answer_byte = if max_bytes_array.length > 1
-    max_bytes_array.max_by do |byte|
-      chr_arr = byte_array_to_char_array(xor_single_char(hex_string, byte.chr))
-      chr_arr.count { |c| c.downcase == c }
-    end
-  else
-    max_bytes_array[0]
+  answer_byte = max_bytes_array.max_by do |byte|
+    chr_arr = byte_array_to_char_array(xor_single_char(hex_string, byte.chr))
+    chr_arr.count { |c| c.upcase != c }
   end
 
-  puts answer_byte
-  puts xor_single_char(hex_string, answer_byte).map {|byte| byte.chr}.join('')
+  # puts answer_byte
+  # puts xor_single_char(hex_string, answer_byte).map {|byte| byte.chr}.join('')
+  {
+    score: score_byte_hash.keys.min,
+    byte: answer_byte,
+    result: xor_single_char(hex_string, answer_byte).map {|byte| byte.chr}.join('')
+  }
 end
 
 # Solve challenge 4
 def find_the_single_xor(filename)
-  lines = File.open(filename, 'rb').readlines
-  best_score = 26*26
-  best_line = 0
-  best_byte = 0
+  lines = File.open(filename, 'rb').readlines.map { |l| l.chomp }
+  line_scores = {}
+  best_score = 26*26*26
 
-  lines.each_with_index do |line|
-    
+  lines.each_with_index do |line, ind|
+    print "."
+    line_scores[line] = decode_single_xor(line).merge({ line: line })
+    score = line_scores[line][:score]
+    if score < best_score
+      best_score = score
+    end
   end
+
+  # max_score = best_score * 1.3
+  # low_enough_hash = line_scores.select { |_, report| report[:score] < max_score }
+
+  max_result = line_scores.max_by do |line, result|
+    result[:result].split('').count { |c| c.upcase != c }
+  end
+
+  puts max_result[1][:byte]
+  puts max_result[1][:score]
+  puts max_result[0]
+  puts max_result[1][:result]
 end
 
 ##### Helper methods #####
@@ -145,6 +162,7 @@ def byte_array_to_freq_hash(byte_array)
   end
   make_frequency_hash(letter_array)
 end
+
 def invert_hash(hash)
   inverted = {}
   hash.each do |key, value|
@@ -169,7 +187,7 @@ def compare_sorted_array_orders(array1, array2)
   array2.each_with_index do |letter, ind|
     ind_in_other_array = array1.index(letter)
     if ind_in_other_array
-      score += (ind - ind_in_other_array).abs
+      score += (ind ** 2 - ind_in_other_array ** 2).abs / len
     else
       score += len * (len - ind)
     end
