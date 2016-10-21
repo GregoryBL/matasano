@@ -117,6 +117,18 @@ def find_the_single_xor(filename)
   puts max_result[1][:result]
 end
 
+# Solve challenge 5
+
+def repeating_key_xor(plaintext, key)
+  key_length = key.length
+  pt_bytes = pt_to_byte_array(plaintext)
+
+  xored = pt_bytes.map.with_index do |byte, index|
+    key[index % key_length].ord ^ byte
+  end
+
+  raw_to_hex(xored)
+end
 ##### Helper methods #####
 
 ## For P1
@@ -207,6 +219,8 @@ def make_frequency_hash(byte_array)
   freq_hash
 end
 
+## For P5
 
-
-
+def pt_to_byte_array(pt)
+  pt.split("").map {|c| c.ord }
+end
