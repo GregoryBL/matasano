@@ -1,3 +1,11 @@
+require set1.rb
+# Solve 6
+def decrypt_repeating_xor(string)
+
+end
+
+
+## Helpers
 def hamming_distance(str1, str2)
   if str1.length > str2.length
     longer = str1
