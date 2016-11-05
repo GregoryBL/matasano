@@ -9,7 +9,7 @@ class Text
     elsif init_hash[:hex]
       @bytes = hex_to_raw(init_hash[:hex])
     elsif init_hash[:string]
-      @bytes = init_hash[:string].map {|c| c.ord }
+      @bytes = init_hash[:string].split("").map {|c| c.ord }
     elsif init_hash[:base64]
       @bytes = base64_to_raw(init_hash[:base64])
     else
@@ -45,20 +45,45 @@ class Text
     @bytes.dup
   end
 
+  def frequencies
+    freq_hash = {}
+    @bytes.each do |b|
+      freq_hash[b] = freq_hash[b] ? freq_hash[b] + 1 : 1
+    end
+    freq_hash
+  end
+
   def base64_value=(new_base64)
     @bytes = base64_to_raw(new_base64)
+    self
   end
 
   def hex_value=(new_hex)
     @bytes = hex_to_raw(new_hex)
+    self
   end
 
   def string_value=(new_string)
     @bytes = new_string.map {|c| c.ord }
+    self
   end
 
   def raw_value=(new_raw)
     @bytes = new_raw
+    self
+  end
+
+  def +(other_text)
+    Text.new(bytes: @bytes + other_text.raw_value)
+  end
+
+  def ^(other_text)
+    return nil if @bytes.length != other_text.raw_value.length
+    Text.new(bytes: (@bytes.zip(other_text.raw_value).map { |a| a[0] ^ a[1] }))
+  end
+
+  def single_xor(byte)
+    Text.new(bytes: @bytes.map { |b| b ^ byte })
   end
 
   private
