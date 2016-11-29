@@ -17,8 +17,16 @@ class Text
     end
   end
 
+  def [](*args)
+    Text.new(bytes: @bytes[*args])
+  end
+
+  def []=(index, byte)
+    @bytes[index] = byte
+  end
+
   def base64_value
-    ((3 - (@bytes.length % 3)) % 3).times { @bytes << 0 }
+    ((3 - (length % 3)) % 3).times { @bytes << 0 }
     groups = @bytes.group_by.with_index { |_, ind| ind / 3 }.map { |g| g[1] }
     groups.inject("") do |memo, group|
       c1 = BASE_64_CHARS[group[0] >> 2]
@@ -78,12 +86,16 @@ class Text
   end
 
   def ^(other_text)
-    return nil if @bytes.length != other_text.raw_value.length
+    return nil if length != other_text.length
     Text.new(bytes: (@bytes.zip(other_text.raw_value).map { |a| a[0] ^ a[1] }))
   end
 
   def single_xor(byte)
     Text.new(bytes: @bytes.map { |b| b ^ byte })
+  end
+
+  def length
+    @bytes.length
   end
 
   private

@@ -8,8 +8,14 @@ module Scorer
 
   ENGLISH_LETTERS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q" "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 
+  COMMON_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 \"\'-.,:;".split('')
+
   def self.score(text)
     score_sorted_array(sort_freq_hash(to_freq_hash(text)))
+  end
+
+  def self.portion_common_letters(text)
+    text.raw_value.select { |c| COMMON_CHARS.include?(c.chr) }.length / text.length.to_f
   end
 
   def self.to_freq_hash(text)
